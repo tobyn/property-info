@@ -292,6 +292,8 @@ function fillSearchForm(fields) {
   if (fields.suffix2)
     form.inpSuffix2.value = fields.suffix2;
 
+  form.selPageSize.value = 100;
+
   form.submit();
 }
 
