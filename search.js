@@ -107,6 +107,9 @@ function search(address) {
 
   function onProfilePage() {
     print('Loaded profile page');
+
+    summary.address = page.evaluate(extractAddress);
+
     page.onLoadFinished = requireSuccess(onResidentialPage);
     click('.contentpanel #sidemenu li:nth-child(4) a');
   }
@@ -175,7 +178,9 @@ function search(address) {
 
 
 function printPropertySummary(summary) {
-  print(''); // insert blank line
+  print('');
+  print(summary.address);
+  print('');
 
   if (summary.yearBuilt)
     print('Built in ' + summary.yearBuilt);
@@ -239,11 +244,11 @@ function extractSearchResults() {
 
     var results = [];
 
-    for (var i = 0; i < resultRows.length; i++) {
-      var resultRow = resultRows[i];
+    for (var i = 0, end = resultRows.length; i < end; i++) {
+      var children = resultRows[i].children;
       results.push({
-        owner: resultRow.children[2].children[0].textContent,
-        address: resultRow.children[3].children[0].textContent
+        owner: children[2].children[0].textContent,
+        address: children[3].children[0].textContent
       });
     }
 
@@ -251,12 +256,21 @@ function extractSearchResults() {
   }
 }
 
+function extractAddress() {
+  var rows = document.querySelectorAll('#ID\\ Block tr');
+  for (var i = 0, end = rows.length; i < end; i++) {
+    var children = rows[i].children;
+    if (children[0].textContent === 'Primary Address Location')
+      return children[1].textContent;
+  }
+}
+
 function extractResidentialItem(label) {
   var rows = document.querySelectorAll('#Residential tr');
-  for (var i = 0; i < rows.length; i++) {
-    var row = rows[i];
-    if (row.children[0].textContent === label)
-      return row.children[1].textContent;
+  for (var i = 0, end = rows.length; i < end; i++) {
+    var children = rows[i].children;
+    if (children[0].textContent === label)
+      return children[1].textContent;
   }
 }
 
