@@ -26,6 +26,7 @@ var SUFFIX_MAP = {
   PIKE: "PIKE",
   PKY: "PKY",
   PL: "PL",
+  PLACE: "PL",
   PLZ: "PLZ",
   RD: "RD",
   RUN: "RUN",
@@ -140,10 +141,12 @@ function search(address) {
 
   function onLoadPermit() {
     var permit = page.evaluate(extractPermitSummary);
-    if (permit && permit.length)
+    if (permit && permit.length) {
       summary.permits.push(permit);
-    else
+    } else {
       onFinish();
+      return;
+    }
 
     if (page.evaluate(hasMorePermits))
       click('.icon-angle-right');
