@@ -33,6 +33,8 @@ var SUFFIX_MAP = {
   ST: "ST",
   STREET: "ST",
   TER: "TER",
+  TR: "TRL",
+  TRAIL: "TRL",
   TRCE: "TRCE",
   TRL: "TRL",
   WALK: "WALK",
