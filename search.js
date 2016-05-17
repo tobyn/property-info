@@ -342,10 +342,11 @@ function parseAddress(address) {
     fields.unit = tokens.pop();
 
     // We might have written Apt, Unit, or whatever here. Discard it.
-    var possibleUnitDesignator = tokens[tokens.length - 1].toUpperCase();
-    if (tokens.length > 0 &&
-        UNIT_DESIGNATORS.indexOf(possibleUnitDesignator) > -1)
-      tokens.pop();
+    if (tokens.length > 0) {
+      var possibleUnitDesignator = tokens[tokens.length - 1].toUpperCase();
+      if (UNIT_DESIGNATORS.indexOf(possibleUnitDesignator) > -1)
+        tokens.pop();
+    }
   }
 
   while (tokens.length > 1) {
