@@ -51,6 +51,8 @@ var DIRECTION_MAP = {
   W:  'W'
 };
 
+var UNIT_DESIGNATORS = [ 'APT', 'UNIT' ];
+
 
 var system = require('system');
 
@@ -70,7 +72,7 @@ function search(address) {
   page.onError = onError;
 
   var summary = {};
-  
+
   function onSearchPage(status) {
     print('Opened search page');
     page.onLoadFinished = requireSuccess(onResultsPage);
@@ -119,7 +121,7 @@ function search(address) {
 
   function onResidentialPage() {
     print('Loaded residential page');
-    
+
     summary.yearBuilt = page.evaluate(extractResidentialItem,'Year Built');
     summary.underRoof = page.evaluate(extractResidentialItem,'Total Under Roof');
 
@@ -300,6 +302,9 @@ function fillSearchForm(fields) {
   if (fields.number)
     form.inpNumber.value = fields.number;
 
+  if (fields.unit)
+    form.inpUnit.value = fields.unit;
+
   form.inpStreet.value = fields.street;
 
   if (fields.direction)
@@ -320,33 +325,55 @@ function hasMorePermits() {
   return !!document.querySelector('.icon-angle-right');
 }
 
+function isNumberString(s) {
+  return s.match(/^\d+$/);
+}
+
 function parseAddress(address) {
   var tokens = address.split(' ');
   var fields = {};
 
-  if (tokens[0].match(/^\d+$/))
+  // If the first token is a number, it's assumed to be the house number.
+  if (tokens.length > 0 && isNumberString(tokens[0]))
     fields.number = tokens.shift();
+
+  // If the end of the address is a number, it might be a unit number.
+  if (tokens.length > 0 && isNumberString(tokens[tokens.length - 1])) {
+    fields.unit = tokens.pop();
+
+    // We might have written Apt, Unit, or whatever here. Discard it.
+    var possibleUnitDesignator = tokens[tokens.length - 1].toUpperCase();
+    if (tokens.length > 0 &&
+        UNIT_DESIGNATORS.indexOf(possibleUnitDesignator) > -1)
+      tokens.pop();
+  }
 
   while (tokens.length > 1) {
     var input = tokens.pop();
     var token = input.toUpperCase();
 
+    // Take the first token that looks like a direction.
     if (!fields.direction && DIRECTION_MAP[token]) {
       fields.direction = DIRECTION_MAP[token];
       continue;
     }
 
     if (fields.suffix2 || !SUFFIX_MAP[token]) {
+      // If we've already found two suffixes, or found a token that
+      // doesn't look like a suffix, we've gone too far.
       tokens.push(input);
       break;
     } else if (fields.suffix1) {
+      // Found second suffix
       fields.suffix2 = fields.suffix1;
       fields.suffix1 = SUFFIX_MAP[token];
     } else {
+      // Found first suffix
       fields.suffix1 = SUFFIX_MAP[token];
     }
   }
 
+  // Whatever's left is the street portion of the address.
   fields.street = tokens.join(' ');
   return fields;
 }
